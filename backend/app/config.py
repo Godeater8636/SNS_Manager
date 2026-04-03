@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     # App base URL (for short links)
     APP_BASE_URL: str = "http://localhost:8000"
 
+    # Local file storage (used when AWS_ACCESS_KEY_ID is not set)
+    LOCAL_STORAGE_PATH: str = "./media"
+
     # Celery
     CELERY_BROKER_URL: str = "redis://localhost:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"

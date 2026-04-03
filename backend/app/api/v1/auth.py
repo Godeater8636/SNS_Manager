@@ -165,7 +165,8 @@ async def password_reset_request(
     if user:
         otp = generate_otp(6)
         _otp_store[body.email] = (otp, datetime.now(timezone.utc) + timedelta(minutes=30))
-        # TODO: send email via SendGrid
+        from app.services.email_service import send_password_reset_email
+        await send_password_reset_email(body.email, otp)
     # Always return success (don't reveal existence)
     return SuccessResponse(data={"message": "メールを確認してください"})
 

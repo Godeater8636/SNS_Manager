@@ -1,13 +1,16 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
 from app.api.v1.router import api_router
+from app.api.v1.media import router as media_router
 from app.core.exceptions import AppException
 
 
@@ -61,6 +64,13 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(media_router, prefix="/api/v1")
+
+# ローカルストレージのファイルを /media/* で配信（S3 未設定時）
+if not settings.AWS_ACCESS_KEY_ID:
+    _media_path = Path(settings.LOCAL_STORAGE_PATH).resolve()
+    _media_path.mkdir(parents=True, exist_ok=True)
+    app.mount("/media", StaticFiles(directory=str(_media_path)), name="media")
 
 
 @app.get("/healthz")

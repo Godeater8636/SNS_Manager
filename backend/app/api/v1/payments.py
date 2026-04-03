@@ -1,4 +1,9 @@
-import stripe
+try:
+    import stripe
+    _STRIPE_AVAILABLE = True
+except ImportError:
+    _STRIPE_AVAILABLE = False
+
 from fastapi import APIRouter, Depends, Request, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -19,6 +24,19 @@ from app.config import settings
 router = APIRouter(prefix="/payments", tags=["payments"])
 
 
+def _require_stripe():
+    """Stripe が設定されていない場合は 503 を返すヘルパー。"""
+    if not _STRIPE_AVAILABLE or not settings.STRIPE_SECRET_KEY:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "STRIPE_NOT_CONFIGURED",
+                "message": "決済機能はローカル開発環境では無効です。STRIPE_SECRET_KEY を設定してください。",
+            },
+        )
+
+
 @router.get("/plans")
 async def list_plans(db: AsyncSession = Depends(get_db)) -> SuccessResponse[list[PlanResponse]]:
     result = await db.execute(select(Plan).order_by(Plan.price_jpy))
@@ -32,6 +50,8 @@ async def subscribe(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> SuccessResponse[SubscribeResponse]:
+    _require_stripe()
+
     plan_result = await db.execute(select(Plan).where(Plan.name == body.plan_name))
     plan = plan_result.scalar_one_or_none()
     if not plan or not plan.stripe_price_id:
@@ -85,6 +105,8 @@ async def change_plan(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> SuccessResponse[dict]:
+    _require_stripe()
+
     plan_result = await db.execute(select(Plan).where(Plan.name == body.new_plan_name))
     plan = plan_result.scalar_one_or_none()
     if not plan or not plan.stripe_price_id:
@@ -109,6 +131,8 @@ async def cancel(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> SuccessResponse[CancelResponse]:
+    _require_stripe()
+
     if not current_user.stripe_sub_id:
         raise ValidationException("アクティブなサブスクリプションがありません")
 
@@ -147,12 +171,13 @@ async def stripe_webhook(
     stripe_signature: str = Header(None, alias="stripe-signature"),
     db: AsyncSession = Depends(get_db),
 ):
+    _require_stripe()
     payload = await request.body()
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
     try:
         event = stripe.Webhook.construct_event(payload, stripe_signature, settings.STRIPE_WEBHOOK_SECRET)
-    except (stripe.error.SignatureVerificationError, ValueError):
+    except Exception:
         raise ValidationException("Webhook署名が無効です")
 
     event_type = event["type"]
