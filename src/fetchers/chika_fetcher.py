@@ -39,6 +39,16 @@ class ChikaFetcher:
             self.logger.info("地価フェッチ: 無効化されているためスキップ")
             return FetchResult(source=self.SOURCE_NAME)
 
+        if not self.api_key:
+            # APIキー無しのまま叩くと 401 で4回リトライして時間を浪費する。
+            # 早期に分かりやすい例外で停止し、対処方法を案内する。
+            raise RuntimeError(
+                "不動産情報ライブラリ API キーが未設定です。\n"
+                "1) https://www.reinfolib.mlit.go.jp/help/apiManual/ で API キーを取得\n"
+                "2) 環境変数 REINFOLIB_API_KEY=<取得したキー> を設定して再実行\n"
+                "   (動作確認だけなら --demo オプションで API 不要のサンプルが作れます)"
+            )
+
         endpoint: str = self.config["endpoint"]
         year = self.config.get("year")
         prefectures: list[str] = self.config.get("prefecture_codes") or [""]

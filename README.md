@@ -49,6 +49,19 @@ python -m src.main --config config/config.yaml
 正常終了で `exit 0`、失敗 1件以上で `exit 1` を返す。
 ログは `logs/sns_manager.log` (日次ローテーション、保持30日)。
 
+### 動作確認モード (`--demo`)
+
+APIキー取得前・ネットワーク制限環境でも、内蔵のサンプル地価ポイント・
+ハザードエリアからKMLを生成できる。
+
+```bash
+python -m src.main --demo
+# → output/chika_latest.kml と output/hazard_latest.kml が生成される
+```
+
+生成された KML を Google Earth Pro で開き、表示が想定通りか確認してから
+本番運用 (APIキー設定 + 定期実行登録) に進むことを推奨。
+
 ### 定期実行 (③ 数ヶ月ごとの特定日に自動起動)
 
 **Windows (タスクスケジューラ):**
@@ -109,8 +122,18 @@ SNS_Manager/
 | MLIT API の URL / クエリ変更 | `config/config.yaml > chika.endpoint` を更新 |
 | MLIT API の応答 JSON 構造変更 | `src/fetchers/chika_fetcher.py::_parse_response` を更新 |
 | ハザードレイヤー追加・URL変更 | `config/config.yaml > hazard.layers` に追記 |
-| 新フォーマット (Shape など) 対応 | `src/fetchers/hazard_fetcher.py::_fetch_layer` に分岐追加 |
+| 配布形式が変わった (例: GeoJSON→Shape) | `format` を `auto_zip` / `geojson_zip` / `shapefile_zip` から選択 |
+| GMLなど未対応形式が来た | `src/fetchers/hazard_fetcher.py::_fetch_layer` に分岐追加 |
 | エラー通知先変更 | `config/config.yaml > notify`、SMTP系は環境変数 |
+
+### サポートするハザードデータ形式
+
+| `format` | 中身 | 備考 |
+|---|---|---|
+| `geojson` | 単一の GeoJSON ファイル | 自治体オープンデータでよくある形式 |
+| `geojson_zip` | GeoJSON を含む ZIP | |
+| `shapefile_zip` | Shapefile (.shp + .dbf) を含む ZIP | 国土数値情報 (KSJ) の `*_GML.zip` の多くが該当 |
+| `auto_zip` | ZIP内を自動判定 (GeoJSON優先→Shapefile) | **既定値**。形式が混在する場合に便利 |
 
 エラーは `logs/sns_manager.log` に集約。`notify.enabled: true` で SMTP メール送信。
 

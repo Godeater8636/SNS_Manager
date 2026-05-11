@@ -39,13 +39,13 @@ hazard:
     - name: "洪水浸水想定区域"
       # 公開データの GeoJSON URL を指定 (例: 国土数値情報 A31)
       url: "https://nlftp.mlit.go.jp/ksj/gml/data/A31/A31-12/A31-12_13_GML.zip"
-      format: "geojson_zip"
+      format: "auto_zip"   # GeoJSON入りなら自動採用、無ければ Shapefile として読込
       style:
         color: "#3399FF"
         opacity: 0.5
     - name: "土砂災害警戒区域"
       url: "https://nlftp.mlit.go.jp/ksj/gml/data/A33/A33-19/A33-19_13_GML.zip"
-      format: "geojson_zip"
+      format: "auto_zip"   # GeoJSON入りなら自動採用、無ければ Shapefile として読込
       style:
         color: "#FF6633"
         opacity: 0.5
