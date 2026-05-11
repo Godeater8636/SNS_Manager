@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Google Earth Pro 用ネットワークリンクテンプレ (設計図 ⑤).
+
+  このKMLを Google Earth Pro で一度だけ開くと、起動するたびに
+  ④ output/ フォルダの chika_latest.kml / hazard_latest.kml を
+  最新版で再読込してくれる。
+
+  使い方:
+    1. 下の <href> を環境に合わせた絶対パスに書き換える
+       (例: file:///C:/SNS_Manager/output/chika_latest.kml)
+    2. このファイルを Google Earth Pro でダブルクリック
+    3. 一度「お気に入り」に保存しておけば以後不要
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>SNS_Manager: 不動産・リスク情報 自動更新</name>
+
+    <NetworkLink>
+      <name>地価公示 (自動更新)</name>
+      <open>1</open>
+      <Link>
+        <!-- 環境に応じてパスを書き換える -->
+        <href>file:///C:/SNS_Manager/output/chika_latest.kml</href>
+        <!-- ファイル変更検知で再読込 (推奨) -->
+        <refreshMode>onChange</refreshMode>
+        <!-- 24時間ごとに強制再取得 (フォールバック) -->
+        <refreshInterval>86400</refreshInterval>
+      </Link>
+    </NetworkLink>
+
+    <NetworkLink>
+      <name>ハザードマップ (自動更新)</name>
+      <open>1</open>
+      <Link>
+        <href>file:///C:/SNS_Manager/output/hazard_latest.kml</href>
+        <refreshMode>onChange</refreshMode>
+        <refreshInterval>86400</refreshInterval>
+      </Link>
+    </NetworkLink>
+  </Document>
+</kml>
