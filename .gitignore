@@ -137,3 +137,47 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+htmlcov/
+.coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Virtual envs
+venv/
+.venv/
+env/
+ENV/
+
+# ===== Project artifacts =====
+# 出力ファイル (Google Earth用 KML/KMZ): 生成物のためコミット対象外
+output/*.kml
+output/*.kmz
+# ダウンロード元データのキャッシュ
+cache/
+data_cache/
+# 通知失敗キュー
+notify_queue/
